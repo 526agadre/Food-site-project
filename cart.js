@@ -37,9 +37,6 @@ const cartCount = document.getElementById('cart-count');
 const cartTotal = document.getElementById('cart-total');
 const checkoutBtn = document.getElementById('checkout-btn');
 
-// Stripe publishable key placeholder. Replace with your Stripe publishable key.
-const stripePublishableKey = 'pk_test_51TFFWr25I5YiBAF7uJq1U68Z0dn6P57LtyLEPLitj5sdnE3jekq3H5TLZXuuaZl7YtUYAwyrrVVSpi0LBRVXKicB00LUPoPfPz';
-
 // Render Menu
 function renderMenu() {
     menuGrid.innerHTML = dishes.map(dish => `
@@ -156,13 +153,16 @@ checkoutBtn.addEventListener('click', async () => {
             return;
         }
 
-        const { sessionId } = result;
-        const stripe = Stripe(stripePublishableKey);
-        const { error } = await stripe.redirectToCheckout({ sessionId });
+        const { checkoutUrl } = result;
 
-        if (error) {
-            showCheckoutError(error.message || 'Unable to redirect to Stripe Checkout.');
-            console.error('Stripe redirect error:', error);
+        if (!checkoutUrl) {
+            showCheckoutError('Checkout URL not returned by server.');
+            return;
+        }
+
+        const popup = window.open(checkoutUrl, 'StripeCheckout', 'width=500,height=700,toolbar=no,menubar=no,scrollbars=yes');
+        if (!popup) {
+            window.location.href = checkoutUrl;
         }
     } catch (error) {
         showCheckoutError('Unable to contact the checkout server. Make sure the site is served from the Node.js server and not opened as a static file.');

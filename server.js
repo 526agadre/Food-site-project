@@ -5,9 +5,15 @@ require('dotenv').config();
 
 const app = express();
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+const stripePublishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
 
 if (!stripeSecretKey) {
   console.error('Missing STRIPE_SECRET_KEY environment variable.');
+  process.exit(1);
+}
+
+if (!stripePublishableKey) {
+  console.error('Missing STRIPE_PUBLISHABLE_KEY environment variable.');
   process.exit(1);
 }
 
@@ -15,6 +21,10 @@ const stripe = Stripe(stripeSecretKey);
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '/')));
+
+app.get('/config', (req, res) => {
+  res.json({ publishableKey: stripePublishableKey });
+});
 
 app.post('/create-checkout-session', async (req, res) => {
   const { cart } = req.body;
@@ -50,7 +60,7 @@ app.post('/create-checkout-session', async (req, res) => {
       },
     });
 
-    res.json({ sessionId: session.id });
+    res.json({ checkoutUrl: session.url });
   } catch (error) {
     console.error('Stripe checkout session error:', error);
     res.status(500).json({ error: error.message || 'Unable to create checkout session.' });
