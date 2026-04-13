@@ -36,6 +36,8 @@ const cartItems = document.getElementById('cart-items');
 const cartCount = document.getElementById('cart-count');
 const cartTotal = document.getElementById('cart-total');
 const checkoutBtn = document.getElementById('checkout-btn');
+const checkoutError = document.getElementById('checkout-error');
+const serverBaseUrl = 'http://localhost:3000';
 
 // Render Menu
 function renderMenu() {
@@ -100,8 +102,6 @@ window.changeQuantity = (id, delta) => {
     updateCart();
 };
 
-const checkoutError = document.getElementById('checkout-error');
-
 function showCheckoutError(message) {
     if (checkoutError) {
         checkoutError.textContent = message;
@@ -136,7 +136,7 @@ checkoutBtn.addEventListener('click', async () => {
     }
 
     try {
-        const response = await fetch('/create-checkout-session', {
+        const response = await fetch(`${serverBaseUrl}/create-checkout-session`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -165,7 +165,7 @@ checkoutBtn.addEventListener('click', async () => {
             window.location.href = checkoutUrl;
         }
     } catch (error) {
-        showCheckoutError('Unable to contact the checkout server. Make sure the site is served from the Node.js server and not opened as a static file.');
+        showCheckoutError('Unable to contact the checkout server at http://localhost:3000. Make sure npm start is running and the Node.js server is active.');
         console.error('Checkout error:', error);
     }
 });
